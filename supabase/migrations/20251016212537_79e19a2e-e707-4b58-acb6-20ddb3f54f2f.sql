@@ -1,9 +1,9 @@
 -- Insert Sample PODs
 INSERT INTO public.pods (id, name, description, lead_user_id, is_active) VALUES
-  ('11111111-1111-1111-1111-111111111111', 'Enterprise Solutions', 'Focused on large enterprise clients in tech and finance sectors', '06e7b3ed-e627-41e6-b267-4b5abfbead8d', true),
-  ('22222222-2222-2222-2222-222222222222', 'SMB Growth', 'Targeting small to medium businesses with high growth potential', '06e7b3ed-e627-41e6-b267-4b5abfbead8d', true),
-  ('33333333-3333-3333-3333-333333333333', 'Healthcare & Life Sciences', 'Specialized in healthcare technology and pharmaceutical companies', '06e7b3ed-e627-41e6-b267-4b5abfbead8d', true),
-  ('44444444-4444-4444-4444-444444444444', 'E-commerce & Retail', 'Focus on online retailers and e-commerce platforms', '06e7b3ed-e627-41e6-b267-4b5abfbead8d', true);
+  ('11111111-1111-1111-1111-111111111111', 'Enterprise Solutions', 'Focused on large enterprise clients in tech and finance sectors', NULL, true),
+  ('22222222-2222-2222-2222-222222222222', 'SMB Growth', 'Targeting small to medium businesses with high growth potential', NULL, true),
+  ('33333333-3333-3333-3333-333333333333', 'Healthcare & Life Sciences', 'Specialized in healthcare technology and pharmaceutical companies', NULL, true),
+  ('44444444-4444-4444-4444-444444444444', 'E-commerce & Retail', 'Focus on online retailers and e-commerce platforms', NULL, true);
 
 -- Insert Sample Target Niches
 INSERT INTO public.target_niches (
@@ -27,7 +27,7 @@ INSERT INTO public.target_niches (
     ARRAY['Legacy system modernization', 'Regulatory compliance challenges', 'Scaling technical infrastructure'],
     ARRAY['Digital transformation leadership', 'Market innovation', 'Operational efficiency'],
     'active', 'high', 2500000, 5,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL
   ),
   (
     'a2222222-2222-2222-2222-222222222222',
@@ -43,7 +43,7 @@ INSERT INTO public.target_niches (
     ARRAY['Supply chain visibility', 'Equipment downtime', 'Production optimization'],
     ARRAY['Smart factory implementation', 'Reduced operational costs', 'Competitive advantage'],
     'active', 'high', 5000000, 3,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL
   ),
   -- SMB Growth POD Niches
   (
@@ -60,7 +60,7 @@ INSERT INTO public.target_niches (
     ARRAY['Scaling development team', 'Time to market pressure', 'Technical debt'],
     ARRAY['Rapid product development', 'Market leadership', 'Successful fundraising'],
     'active', 'medium', 800000, 10,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL
   ),
   (
     'b2222222-2222-2222-2222-222222222222',
@@ -76,7 +76,7 @@ INSERT INTO public.target_niches (
     ARRAY['Manual reporting processes', 'Client data management', 'Scaling challenges'],
     ARRAY['Automated workflows', 'Better client retention', 'Increased profitability'],
     'researching', 'medium', 500000, 15,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL
   ),
   -- Healthcare & Life Sciences POD Niches
   (
@@ -93,7 +93,7 @@ INSERT INTO public.target_niches (
     ARRAY['HIPAA compliance complexity', 'EHR integration challenges', 'Patient data security'],
     ARRAY['Improved patient outcomes', 'Healthcare accessibility', 'Regulatory confidence'],
     'active', 'high', 1500000, 8,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL
   ),
   (
     'c2222222-2222-2222-2222-222222222222',
@@ -109,7 +109,7 @@ INSERT INTO public.target_niches (
     ARRAY['Trial data management', 'Regulatory reporting', 'Multi-site coordination'],
     ARRAY['Faster trial completion', 'Data accuracy', 'Regulatory compliance'],
     'active', 'medium', 2000000, 4,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL
   ),
   -- E-commerce & Retail POD Niches
   (
@@ -126,7 +126,7 @@ INSERT INTO public.target_niches (
     ARRAY['Shopping cart abandonment', 'Mobile experience', 'Inventory management'],
     ARRAY['Increased conversion rates', 'Customer lifetime value', 'Market expansion'],
     'active', 'high', 1200000, 12,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL
   ),
   (
     'd2222222-2222-2222-2222-222222222222',
@@ -142,7 +142,7 @@ INSERT INTO public.target_niches (
     ARRAY['Online-offline integration', 'Inventory visibility', 'Customer experience consistency'],
     ARRAY['Seamless shopping experience', 'Operational efficiency', 'Competitive positioning'],
     'researching', 'low', 800000, 6,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL
   );
 
 -- Insert Sample BD Campaigns
@@ -163,8 +163,8 @@ INSERT INTO public.bd_campaigns (
     ARRAY['CTO', 'VP of Engineering'],
     ARRAY['North America'],
     150, 89, 23, 8, 2,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d',
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL,
+    NULL
   ),
   (
     'ca222222-2222-2222-2222-222222222222',
@@ -177,8 +177,8 @@ INSERT INTO public.bd_campaigns (
     ARRAY['Head of Digital Transformation', 'CIO'],
     ARRAY['North America', 'Europe'],
     200, 145, 31, 12, 1,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d',
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL,
+    NULL
   ),
   -- Manufacturing Campaigns
   (
@@ -192,8 +192,8 @@ INSERT INTO public.bd_campaigns (
     ARRAY['Chief Digital Officer', 'VP Operations'],
     ARRAY['North America'],
     50, 0, 0, 0, 0,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d',
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL,
+    NULL
   ),
   -- SaaS Startup Campaigns
   (
@@ -207,8 +207,8 @@ INSERT INTO public.bd_campaigns (
     ARRAY['CEO', 'CTO'],
     ARRAY['North America'],
     100, 67, 18, 9, 3,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d',
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL,
+    NULL
   ),
   (
     'cb222222-2222-2222-2222-222222222222',
@@ -221,8 +221,8 @@ INSERT INTO public.bd_campaigns (
     ARRAY['CEO', 'VP of Product'],
     ARRAY['North America'],
     80, 80, 25, 15, 5,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d',
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL,
+    NULL
   ),
   -- Marketing Agency Campaigns
   (
@@ -236,8 +236,8 @@ INSERT INTO public.bd_campaigns (
     ARRAY['Agency Owner', 'Head of Operations'],
     ARRAY['North America'],
     120, 45, 8, 3, 0,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d',
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL,
+    NULL
   ),
   -- Digital Health Campaigns
   (
@@ -251,8 +251,8 @@ INSERT INTO public.bd_campaigns (
     ARRAY['Chief Medical Officer', 'CTO'],
     ARRAY['North America'],
     75, 48, 15, 7, 2,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d',
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL,
+    NULL
   ),
   (
     'cc222222-2222-2222-2222-222222222222',
@@ -265,8 +265,8 @@ INSERT INTO public.bd_campaigns (
     ARRAY['VP of Product', 'CTO'],
     ARRAY['North America'],
     60, 60, 22, 11, 4,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d',
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL,
+    NULL
   ),
   -- Clinical Research Campaigns
   (
@@ -280,8 +280,8 @@ INSERT INTO public.bd_campaigns (
     ARRAY['Head of Clinical Operations', 'VP of Technology'],
     ARRAY['North America', 'Europe'],
     40, 0, 0, 0, 0,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d',
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL,
+    NULL
   ),
   -- E-commerce Campaigns
   (
@@ -295,8 +295,8 @@ INSERT INTO public.bd_campaigns (
     ARRAY['CEO', 'Head of E-commerce'],
     ARRAY['North America'],
     150, 112, 34, 16, 4,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d',
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL,
+    NULL
   ),
   (
     'cd222222-2222-2222-2222-222222222222',
@@ -309,8 +309,8 @@ INSERT INTO public.bd_campaigns (
     ARRAY['VP of Technology', 'Head of E-commerce'],
     ARRAY['North America'],
     100, 100, 28, 14, 6,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d',
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL,
+    NULL
   ),
   -- Omnichannel Retail Campaign
   (
@@ -324,6 +324,6 @@ INSERT INTO public.bd_campaigns (
     ARRAY['Chief Digital Officer', 'VP of Retail Operations'],
     ARRAY['North America'],
     80, 0, 0, 0, 0,
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d',
-    '06e7b3ed-e627-41e6-b267-4b5abfbead8d'
+    NULL,
+    NULL
   );

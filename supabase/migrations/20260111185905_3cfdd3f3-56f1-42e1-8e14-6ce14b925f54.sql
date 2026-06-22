@@ -178,15 +178,23 @@ USING (
   OR public.has_role(auth.uid(), 'manager')
 );
 
--- 5. deal_reminders - Add UPDATE policy for creators
-DROP POLICY IF EXISTS "Users can update own reminders" ON public.deal_reminders;
+-- 5. deal_reminders - Add UPDATE policy for creators (skip if table missing)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'deal_reminders'
+  ) THEN
+    DROP POLICY IF EXISTS "Users can update own reminders" ON public.deal_reminders;
 
-CREATE POLICY "Users can update own reminders"
-ON public.deal_reminders
-FOR UPDATE
-TO authenticated
-USING (auth.uid() = created_by)
-WITH CHECK (auth.uid() = created_by);
+    CREATE POLICY "Users can update own reminders"
+    ON public.deal_reminders
+    FOR UPDATE
+    TO authenticated
+    USING (auth.uid() = created_by)
+    WITH CHECK (auth.uid() = created_by);
+  END IF;
+END $$;
 
 -- 6. followup_suggestions - Add DELETE policy
 DROP POLICY IF EXISTS "Users can delete own suggestions" ON public.followup_suggestions;

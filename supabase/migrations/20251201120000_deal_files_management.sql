@@ -142,7 +142,8 @@ WHERE NOT EXISTS (
 );
 
 -- Storage policies granting access to BD/admin roles only
-CREATE POLICY IF NOT EXISTS "BD team can upload deal files"
+DROP POLICY IF EXISTS "BD team can upload deal files" ON storage.objects;
+CREATE POLICY "BD team can upload deal files"
   ON storage.objects
   FOR INSERT TO authenticated
   WITH CHECK (
@@ -156,7 +157,8 @@ CREATE POLICY IF NOT EXISTS "BD team can upload deal files"
     )
   );
 
-CREATE POLICY IF NOT EXISTS "BD team can manage deal files"
+DROP POLICY IF EXISTS "BD team can manage deal files" ON storage.objects;
+CREATE POLICY "BD team can manage deal files"
   ON storage.objects
   FOR UPDATE TO authenticated
   USING (
@@ -180,7 +182,8 @@ CREATE POLICY IF NOT EXISTS "BD team can manage deal files"
     )
   );
 
-CREATE POLICY IF NOT EXISTS "BD team can read deal files"
+DROP POLICY IF EXISTS "BD team can read deal files" ON storage.objects;
+CREATE POLICY "BD team can read deal files"
   ON storage.objects
   FOR SELECT TO authenticated
   USING (
@@ -194,7 +197,8 @@ CREATE POLICY IF NOT EXISTS "BD team can read deal files"
     )
   );
 
-CREATE POLICY IF NOT EXISTS "Admins can delete deal files from storage"
+DROP POLICY IF EXISTS "Admins can delete deal files from storage" ON storage.objects;
+CREATE POLICY "Admins can delete deal files from storage"
   ON storage.objects
   FOR DELETE TO authenticated
   USING (

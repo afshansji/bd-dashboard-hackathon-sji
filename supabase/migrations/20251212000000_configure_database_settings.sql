@@ -13,8 +13,13 @@
 -- ALTER DATABASE postgres SET app.settings.service_role_key = 'your-actual-service-role-key-here';
 
 -- Option 2: Use Supabase Vault (more secure, recommended)
--- Enable vault extension
-CREATE EXTENSION IF NOT EXISTS vault WITH SCHEMA vault CASCADE;
+-- Enable vault extension when available (not all Postgres installs ship vault)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name = 'vault') THEN
+    CREATE EXTENSION IF NOT EXISTS vault WITH SCHEMA vault CASCADE;
+  END IF;
+END $$;
 
 -- Create a helper function to retrieve service role key from vault
 CREATE OR REPLACE FUNCTION get_service_role_key()

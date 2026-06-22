@@ -19,16 +19,19 @@ CREATE TABLE IF NOT EXISTS public.dhs_submissions (
 ALTER TABLE public.dhs_submissions ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for dhs_submissions
+DROP POLICY IF EXISTS "All authenticated users can view DHS submissions" ON public.dhs_submissions;
 CREATE POLICY "All authenticated users can view DHS submissions" 
   ON public.dhs_submissions 
   FOR SELECT 
   USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Users can create own DHS submissions" ON public.dhs_submissions;
 CREATE POLICY "Users can create own DHS submissions" 
   ON public.dhs_submissions 
   FOR INSERT 
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own DHS submissions" ON public.dhs_submissions;
 CREATE POLICY "Users can update own DHS submissions" 
   ON public.dhs_submissions 
   FOR UPDATE 
@@ -37,17 +40,19 @@ CREATE POLICY "Users can update own DHS submissions"
     date = CURRENT_DATE
   );
 
+DROP POLICY IF EXISTS "Users can delete own DHS submissions" ON public.dhs_submissions;
 CREATE POLICY "Users can delete own DHS submissions" 
   ON public.dhs_submissions 
   FOR DELETE 
   USING (auth.uid() = user_id);
 
 -- Create indexes for better query performance
-CREATE INDEX idx_dhs_submissions_user_date ON public.dhs_submissions(user_id, date DESC);
-CREATE INDEX idx_dhs_submissions_date ON public.dhs_submissions(date DESC);
-CREATE INDEX idx_dhs_submissions_status ON public.dhs_submissions(status, date DESC) WHERE status IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_dhs_submissions_user_date ON public.dhs_submissions(user_id, date DESC);
+CREATE INDEX IF NOT EXISTS idx_dhs_submissions_date ON public.dhs_submissions(date DESC);
+CREATE INDEX IF NOT EXISTS idx_dhs_submissions_status ON public.dhs_submissions(status, date DESC) WHERE status IS NOT NULL;
 
 -- Create trigger for automatic updated_at timestamp
+DROP TRIGGER IF EXISTS update_dhs_submissions_updated_at ON public.dhs_submissions;
 CREATE TRIGGER update_dhs_submissions_updated_at
   BEFORE UPDATE ON public.dhs_submissions
   FOR EACH ROW

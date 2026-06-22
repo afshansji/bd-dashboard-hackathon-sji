@@ -1,5 +1,5 @@
 -- Create signing_documents table for document signing functionality
-CREATE TABLE public.signing_documents (
+CREATE TABLE IF NOT EXISTS public.signing_documents (
   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   deal_id uuid REFERENCES public.deals(id) ON DELETE CASCADE,
   client_id uuid REFERENCES public.clients(id) ON DELETE SET NULL,
@@ -24,10 +24,12 @@ CREATE TABLE public.signing_documents (
 ALTER TABLE public.signing_documents ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies
+DROP POLICY IF EXISTS "Authenticated users can view signing documents" ON public.signing_documents;
 CREATE POLICY "Authenticated users can view signing documents"
 ON public.signing_documents FOR SELECT
 USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Admins and managers can manage signing documents" ON public.signing_documents;
 CREATE POLICY "Admins and managers can manage signing documents"
 ON public.signing_documents FOR ALL
 USING (
@@ -37,6 +39,7 @@ USING (
 );
 
 -- Update trigger
+DROP TRIGGER IF EXISTS update_signing_documents_updated_at ON public.signing_documents;
 CREATE TRIGGER update_signing_documents_updated_at
 BEFORE UPDATE ON public.signing_documents
 FOR EACH ROW

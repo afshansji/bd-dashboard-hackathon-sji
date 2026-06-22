@@ -42,12 +42,14 @@ create index if not exists idx_feedback_comments_user on public.feedback_comment
 alter table public.feedback_reports enable row level security;
 alter table public.feedback_comments enable row level security;
 
-create policy if not exists "Feedback owners can insert"
+drop policy if exists "Feedback owners can insert" on public.feedback_reports;
+create policy "Feedback owners can insert"
   on public.feedback_reports
   for insert
   with check (auth.uid() = created_by);
 
-create policy if not exists "Feedback owners can view"
+drop policy if exists "Feedback owners can view" on public.feedback_reports;
+create policy "Feedback owners can view"
   on public.feedback_reports
   for select
   using (
@@ -55,7 +57,8 @@ create policy if not exists "Feedback owners can view"
     or has_role(auth.uid(), 'super_admin'::app_role)
   );
 
-create policy if not exists "Feedback owners can view comments"
+drop policy if exists "Feedback owners can view comments" on public.feedback_comments;
+create policy "Feedback owners can view comments"
   on public.feedback_comments
   for select
   using (
@@ -66,7 +69,8 @@ create policy if not exists "Feedback owners can view comments"
     or has_role(auth.uid(), 'super_admin'::app_role)
   );
 
-create policy if not exists "Authenticated users can comment"
+drop policy if exists "Authenticated users can comment" on public.feedback_comments;
+create policy "Authenticated users can comment"
   on public.feedback_comments
   for insert
   with check (auth.uid() = user_id);
@@ -76,7 +80,8 @@ insert into storage.buckets (id, name, public)
 select 'feedback', 'feedback', false
 where not exists (select 1 from storage.buckets where id = 'feedback');
 
-create policy if not exists "Users can upload feedback attachments"
+drop policy if exists "Users can upload feedback attachments" on storage.objects;
+create policy "Users can upload feedback attachments"
   on storage.objects
   for insert to authenticated
   with check (
@@ -84,7 +89,8 @@ create policy if not exists "Users can upload feedback attachments"
     and owner = auth.uid()
   );
 
-create policy if not exists "Users can view own feedback attachments"
+drop policy if exists "Users can view own feedback attachments" on storage.objects;
+create policy "Users can view own feedback attachments"
   on storage.objects
   for select to authenticated
   using (

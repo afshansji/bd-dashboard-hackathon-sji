@@ -6,19 +6,34 @@
 -- =====================================================
 
 -- Quarter status enum
-CREATE TYPE public.quarter_status AS ENUM ('planning', 'active', 'completed', 'archived');
+DO $$ BEGIN
+  CREATE TYPE public.quarter_status AS ENUM ('planning', 'active', 'completed', 'archived');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Goal status enum
-CREATE TYPE public.goal_status AS ENUM ('on_track', 'at_risk', 'off_track', 'completed');
+DO $$ BEGIN
+  CREATE TYPE public.goal_status AS ENUM ('on_track', 'at_risk', 'off_track', 'completed');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Goal approval status enum
-CREATE TYPE public.goal_approval_status AS ENUM ('draft', 'pending_approval', 'approved', 'rejected');
+DO $$ BEGIN
+  CREATE TYPE public.goal_approval_status AS ENUM ('draft', 'pending_approval', 'approved', 'rejected');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Activity frequency enum
-CREATE TYPE public.activity_frequency AS ENUM ('daily', 'weekly', 'biweekly', 'monthly', 'one_time');
+DO $$ BEGIN
+  CREATE TYPE public.activity_frequency AS ENUM ('daily', 'weekly', 'biweekly', 'monthly', 'one_time');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Activity status enum
-CREATE TYPE public.activity_status AS ENUM ('active', 'paused', 'completed');
+DO $$ BEGIN
+  CREATE TYPE public.activity_status AS ENUM ('active', 'paused', 'completed');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- =====================================================
 -- PART 2: CREATE TABLES
@@ -287,49 +302,58 @@ $$ LANGUAGE plpgsql;
 -- =====================================================
 
 -- Triggers for updating timestamps
+DROP TRIGGER IF EXISTS update_accountability_quarters_timestamp ON public.accountability_quarters;
 CREATE TRIGGER update_accountability_quarters_timestamp
   BEFORE UPDATE ON public.accountability_quarters
   FOR EACH ROW
   EXECUTE FUNCTION public.update_accountability_timestamp();
 
+DROP TRIGGER IF EXISTS update_accountability_team_goals_timestamp ON public.accountability_team_goals;
 CREATE TRIGGER update_accountability_team_goals_timestamp
   BEFORE UPDATE ON public.accountability_team_goals
   FOR EACH ROW
   EXECUTE FUNCTION public.update_accountability_timestamp();
 
+DROP TRIGGER IF EXISTS update_accountability_rep_goals_timestamp ON public.accountability_rep_goals;
 CREATE TRIGGER update_accountability_rep_goals_timestamp
   BEFORE UPDATE ON public.accountability_rep_goals
   FOR EACH ROW
   EXECUTE FUNCTION public.update_accountability_timestamp();
 
+DROP TRIGGER IF EXISTS update_accountability_activities_timestamp ON public.accountability_activities;
 CREATE TRIGGER update_accountability_activities_timestamp
   BEFORE UPDATE ON public.accountability_activities
   FOR EACH ROW
   EXECUTE FUNCTION public.update_accountability_timestamp();
 
+DROP TRIGGER IF EXISTS update_accountability_weekly_updates_timestamp ON public.accountability_weekly_updates;
 CREATE TRIGGER update_accountability_weekly_updates_timestamp
   BEFORE UPDATE ON public.accountability_weekly_updates
   FOR EACH ROW
   EXECUTE FUNCTION public.update_accountability_timestamp();
 
 -- Triggers for automatic progress calculation
+DROP TRIGGER IF EXISTS trigger_update_progress_on_activity_change ON public.accountability_activities;
 CREATE TRIGGER trigger_update_progress_on_activity_change
   AFTER INSERT OR UPDATE ON public.accountability_activities
   FOR EACH ROW
   EXECUTE FUNCTION public.update_goal_progress_from_activities();
 
+DROP TRIGGER IF EXISTS trigger_update_progress_on_weekly_update ON public.accountability_weekly_updates;
 CREATE TRIGGER trigger_update_progress_on_weekly_update
   AFTER INSERT OR UPDATE ON public.accountability_weekly_updates
   FOR EACH ROW
   EXECUTE FUNCTION public.update_goal_progress_from_activities();
 
 -- Triggers for automatic status calculation (only for rep goals)
+DROP TRIGGER IF EXISTS trigger_calculate_rep_goal_status ON public.accountability_rep_goals;
 CREATE TRIGGER trigger_calculate_rep_goal_status
   BEFORE UPDATE OF current_value ON public.accountability_rep_goals
   FOR EACH ROW
   EXECUTE FUNCTION public.calculate_goal_status();
 
 -- Triggers for automatic status calculation (only for team goals)
+DROP TRIGGER IF EXISTS trigger_calculate_team_goal_status ON public.accountability_team_goals;
 CREATE TRIGGER trigger_calculate_team_goal_status
   BEFORE UPDATE OF current_value ON public.accountability_team_goals
   FOR EACH ROW
@@ -340,32 +364,39 @@ CREATE TRIGGER trigger_calculate_team_goal_status
 -- =====================================================
 
 -- Quarters policies
+DROP POLICY IF EXISTS "Authenticated users can view quarters" ON public.accountability_quarters;
 CREATE POLICY "Authenticated users can view quarters"
   ON public.accountability_quarters FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Managers can manage quarters" ON public.accountability_quarters;
 CREATE POLICY "Managers can manage quarters"
   ON public.accountability_quarters FOR ALL
   USING (public.is_manager_or_admin());
 
 -- Team goals policies
+DROP POLICY IF EXISTS "Authenticated users can view team goals" ON public.accountability_team_goals;
 CREATE POLICY "Authenticated users can view team goals"
   ON public.accountability_team_goals FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Managers can manage team goals" ON public.accountability_team_goals;
 CREATE POLICY "Managers can manage team goals"
   ON public.accountability_team_goals FOR ALL
   USING (public.is_manager_or_admin());
 
 -- Rep goals policies
+DROP POLICY IF EXISTS "Authenticated users can view rep goals" ON public.accountability_rep_goals;
 CREATE POLICY "Authenticated users can view rep goals"
   ON public.accountability_rep_goals FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Reps can create their own goals" ON public.accountability_rep_goals;
 CREATE POLICY "Reps can create their own goals"
   ON public.accountability_rep_goals FOR INSERT
   WITH CHECK (rep_id = auth.uid() OR public.is_manager_or_admin());
 
+DROP POLICY IF EXISTS "Reps can update their own goals (status/progress)" ON public.accountability_rep_goals;
 CREATE POLICY "Reps can update their own goals (status/progress)"
   ON public.accountability_rep_goals FOR UPDATE
   USING (
@@ -373,19 +404,23 @@ CREATE POLICY "Reps can update their own goals (status/progress)"
     approval_status IN ('draft', 'rejected')
   );
 
+DROP POLICY IF EXISTS "Managers can update any rep goal" ON public.accountability_rep_goals;
 CREATE POLICY "Managers can update any rep goal"
   ON public.accountability_rep_goals FOR UPDATE
   USING (public.is_manager_or_admin());
 
+DROP POLICY IF EXISTS "Managers can delete rep goals" ON public.accountability_rep_goals;
 CREATE POLICY "Managers can delete rep goals"
   ON public.accountability_rep_goals FOR DELETE
   USING (public.is_manager_or_admin());
 
 -- Activities policies
+DROP POLICY IF EXISTS "Authenticated users can view activities" ON public.accountability_activities;
 CREATE POLICY "Authenticated users can view activities"
   ON public.accountability_activities FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Goal owners can manage their activities" ON public.accountability_activities;
 CREATE POLICY "Goal owners can manage their activities"
   ON public.accountability_activities FOR ALL
   USING (
@@ -397,10 +432,12 @@ CREATE POLICY "Goal owners can manage their activities"
   );
 
 -- Weekly updates policies
+DROP POLICY IF EXISTS "Authenticated users can view weekly updates" ON public.accountability_weekly_updates;
 CREATE POLICY "Authenticated users can view weekly updates"
   ON public.accountability_weekly_updates FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Activity owners can create weekly updates" ON public.accountability_weekly_updates;
 CREATE POLICY "Activity owners can create weekly updates"
   ON public.accountability_weekly_updates FOR INSERT
   WITH CHECK (
@@ -412,10 +449,12 @@ CREATE POLICY "Activity owners can create weekly updates"
     OR public.is_manager_or_admin()
   );
 
+DROP POLICY IF EXISTS "Update owners can edit their updates" ON public.accountability_weekly_updates;
 CREATE POLICY "Update owners can edit their updates"
   ON public.accountability_weekly_updates FOR UPDATE
   USING (submitted_by = auth.uid() OR public.is_manager_or_admin());
 
+DROP POLICY IF EXISTS "Managers can delete weekly updates" ON public.accountability_weekly_updates;
 CREATE POLICY "Managers can delete weekly updates"
   ON public.accountability_weekly_updates FOR DELETE
   USING (public.is_manager_or_admin());
@@ -514,11 +553,13 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Create triggers for notifications
+DROP TRIGGER IF EXISTS trigger_notify_goal_submitted ON public.accountability_rep_goals;
 CREATE TRIGGER trigger_notify_goal_submitted
   AFTER UPDATE ON public.accountability_rep_goals
   FOR EACH ROW
   EXECUTE FUNCTION public.notify_goal_submitted_for_approval();
 
+DROP TRIGGER IF EXISTS trigger_notify_goal_decision ON public.accountability_rep_goals;
 CREATE TRIGGER trigger_notify_goal_decision
   AFTER UPDATE ON public.accountability_rep_goals
   FOR EACH ROW

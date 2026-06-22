@@ -39,11 +39,13 @@ CREATE TABLE IF NOT EXISTS task_labels (
 ALTER TABLE task_labels ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for task_labels
-CREATE POLICY IF NOT EXISTS "Authenticated users can view task labels"
+DROP POLICY IF EXISTS "Authenticated users can view task labels" ON task_labels;
+CREATE POLICY "Authenticated users can view task labels"
   ON task_labels FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
-CREATE POLICY IF NOT EXISTS "Authenticated users can create task labels"
+DROP POLICY IF EXISTS "Authenticated users can create task labels" ON task_labels;
+CREATE POLICY "Authenticated users can create task labels"
   ON task_labels FOR INSERT
   WITH CHECK (auth.uid() IS NOT NULL);
 
@@ -66,11 +68,13 @@ CREATE INDEX IF NOT EXISTS idx_project_task_labels_label_id ON project_task_labe
 ALTER TABLE project_task_labels ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for project_task_labels
-CREATE POLICY IF NOT EXISTS "Users can view task label associations"
+DROP POLICY IF EXISTS "Users can view task label associations" ON project_task_labels;
+CREATE POLICY "Users can view task label associations"
   ON project_task_labels FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
-CREATE POLICY IF NOT EXISTS "Users can manage task label associations"
+DROP POLICY IF EXISTS "Users can manage task label associations" ON project_task_labels;
+CREATE POLICY "Users can manage task label associations"
   ON project_task_labels FOR ALL
   USING (auth.uid() IS NOT NULL);
 
@@ -96,15 +100,18 @@ CREATE INDEX IF NOT EXISTS idx_task_attachments_task_id ON task_attachments(task
 ALTER TABLE task_attachments ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for task_attachments
-CREATE POLICY IF NOT EXISTS "Users can view task attachments"
+DROP POLICY IF EXISTS "Users can view task attachments" ON task_attachments;
+CREATE POLICY "Users can view task attachments"
   ON task_attachments FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
-CREATE POLICY IF NOT EXISTS "Users can upload task attachments"
+DROP POLICY IF EXISTS "Users can upload task attachments" ON task_attachments;
+CREATE POLICY "Users can upload task attachments"
   ON task_attachments FOR INSERT
   WITH CHECK (auth.uid() IS NOT NULL AND uploaded_by = auth.uid());
 
-CREATE POLICY IF NOT EXISTS "Users can delete their own task attachments"
+DROP POLICY IF EXISTS "Users can delete their own task attachments" ON task_attachments;
+CREATE POLICY "Users can delete their own task attachments"
   ON task_attachments FOR DELETE
   USING (auth.uid() IS NOT NULL AND uploaded_by = auth.uid());
 
@@ -120,7 +127,8 @@ WHERE NOT EXISTS (
 );
 
 -- Storage policies for task-files bucket
-CREATE POLICY IF NOT EXISTS "Authenticated users can upload task files"
+DROP POLICY IF EXISTS "Authenticated users can upload task files" ON storage.objects;
+CREATE POLICY "Authenticated users can upload task files"
   ON storage.objects
   FOR INSERT TO authenticated
   WITH CHECK (
@@ -128,7 +136,8 @@ CREATE POLICY IF NOT EXISTS "Authenticated users can upload task files"
     AND auth.uid() IS NOT NULL
   );
 
-CREATE POLICY IF NOT EXISTS "Authenticated users can view task files"
+DROP POLICY IF EXISTS "Authenticated users can view task files" ON storage.objects;
+CREATE POLICY "Authenticated users can view task files"
   ON storage.objects
   FOR SELECT TO authenticated
   USING (
@@ -136,7 +145,8 @@ CREATE POLICY IF NOT EXISTS "Authenticated users can view task files"
     AND auth.uid() IS NOT NULL
   );
 
-CREATE POLICY IF NOT EXISTS "Users can update their own task files"
+DROP POLICY IF EXISTS "Users can update their own task files" ON storage.objects;
+CREATE POLICY "Users can update their own task files"
   ON storage.objects
   FOR UPDATE TO authenticated
   USING (
@@ -148,7 +158,8 @@ CREATE POLICY IF NOT EXISTS "Users can update their own task files"
     AND owner = auth.uid()
   );
 
-CREATE POLICY IF NOT EXISTS "Users can delete their own task files"
+DROP POLICY IF EXISTS "Users can delete their own task files" ON storage.objects;
+CREATE POLICY "Users can delete their own task files"
   ON storage.objects
   FOR DELETE TO authenticated
   USING (
@@ -170,4 +181,3 @@ COMMENT ON COLUMN project_tasks.reference_url IS 'Generic reference URL';
 COMMENT ON TABLE task_labels IS 'Reusable labels/tags for tasks';
 COMMENT ON TABLE project_task_labels IS 'Many-to-many relationship between tasks and labels';
 COMMENT ON TABLE task_attachments IS 'File attachments for tasks';
-

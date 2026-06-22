@@ -142,25 +142,33 @@ BEGIN
   END IF;
 END $$;
 
--- 5. Cron scheduling for hourly syncs
-INSERT INTO cron.jobs (jobname, schedule, command)
-SELECT 'sync-control-tower-deals-hourly', '0 * * * *',
-       $$SELECT net.http_post(
-           url := 'https://qzzvcqoletuummdsbbio.supabase.co/functions/v1/sync-control-tower-deals',
-           headers := '{"Content-Type": "application/json", "Authorization": "Bearer [SERVICE_ROLE_KEY]"}'::jsonb,
-           body := '{}'::jsonb
-         )$$
-WHERE NOT EXISTS (
-  SELECT 1 FROM cron.jobs WHERE jobname = 'sync-control-tower-deals-hourly'
-);
+-- 5. Cron scheduling for hourly syncs (skip if pg_cron not enabled)
+DO $cron$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'cron' AND table_name = 'jobs'
+  ) THEN
+    INSERT INTO cron.jobs (jobname, schedule, command)
+    SELECT 'sync-control-tower-deals-hourly', '0 * * * *',
+           $cmd$SELECT net.http_post(
+               url := 'https://qzzvcqoletuummdsbbio.supabase.co/functions/v1/sync-control-tower-deals',
+               headers := '{"Content-Type": "application/json", "Authorization": "Bearer [SERVICE_ROLE_KEY]"}'::jsonb,
+               body := '{}'::jsonb
+             )$cmd$
+    WHERE NOT EXISTS (
+      SELECT 1 FROM cron.jobs WHERE jobname = 'sync-control-tower-deals-hourly'
+    );
 
-INSERT INTO cron.jobs (jobname, schedule, command)
-SELECT 'push-to-control-tower-hourly', '30 * * * *',
-       $$SELECT net.http_post(
-           url := 'https://qzzvcqoletuummdsbbio.supabase.co/functions/v1/push-to-control-tower',
-           headers := '{"Content-Type": "application/json", "Authorization": "Bearer [SERVICE_ROLE_KEY]"}'::jsonb,
-           body := '{"entity_type": "all"}'::jsonb
-         )$$
-WHERE NOT EXISTS (
-  SELECT 1 FROM cron.jobs WHERE jobname = 'push-to-control-tower-hourly'
-);
+    INSERT INTO cron.jobs (jobname, schedule, command)
+    SELECT 'push-to-control-tower-hourly', '30 * * * *',
+           $cmd$SELECT net.http_post(
+               url := 'https://qzzvcqoletuummdsbbio.supabase.co/functions/v1/push-to-control-tower',
+               headers := '{"Content-Type": "application/json", "Authorization": "Bearer [SERVICE_ROLE_KEY]"}'::jsonb,
+               body := '{"entity_type": "all"}'::jsonb
+             )$cmd$
+    WHERE NOT EXISTS (
+      SELECT 1 FROM cron.jobs WHERE jobname = 'push-to-control-tower-hourly'
+    );
+  END IF;
+END $cron$;

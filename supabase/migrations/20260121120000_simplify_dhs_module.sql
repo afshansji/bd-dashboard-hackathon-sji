@@ -13,13 +13,34 @@ ALTER TABLE public.dhs_submissions
   DROP COLUMN IF EXISTS score,
   DROP COLUMN IF EXISTS status;
 
--- Step 3: Rename 'notes' to 'content' for clarity
-ALTER TABLE public.dhs_submissions
-  RENAME COLUMN notes TO content;
+-- Step 3: Rename 'notes' to 'content' for clarity (skip if already renamed)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'dhs_submissions' AND column_name = 'notes'
+  ) THEN
+    ALTER TABLE public.dhs_submissions RENAME COLUMN notes TO content;
+  ELSIF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'dhs_submissions' AND column_name = 'content'
+  ) THEN
+    ALTER TABLE public.dhs_submissions ADD COLUMN content TEXT;
+  END IF;
+END $$;
 
 -- Step 4: Add constraint to ensure content is not empty
-ALTER TABLE public.dhs_submissions
-  ADD CONSTRAINT content_not_empty CHECK (char_length(trim(content)) > 0);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'content_not_empty'
+      AND conrelid = 'public.dhs_submissions'::regclass
+  ) THEN
+    ALTER TABLE public.dhs_submissions
+    ADD CONSTRAINT content_not_empty CHECK (char_length(trim(content)) > 0);
+  END IF;
+END $$;
 
 -- Step 5: Drop indexes that referenced removed columns
 DROP INDEX IF EXISTS idx_dhs_submissions_status;

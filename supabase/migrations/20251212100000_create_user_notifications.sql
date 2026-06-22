@@ -29,24 +29,28 @@ CREATE INDEX IF NOT EXISTS idx_user_notifications_type ON public.user_notificati
 ALTER TABLE public.user_notifications ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users can view their own notifications
+DROP POLICY IF EXISTS "Users can view their own notifications" ON public.user_notifications;
 CREATE POLICY "Users can view their own notifications"
   ON public.user_notifications
   FOR SELECT
   USING (auth.uid() = user_id);
 
 -- Policy: Users can update their own notifications (for marking as read)
+DROP POLICY IF EXISTS "Users can update their own notifications" ON public.user_notifications;
 CREATE POLICY "Users can update their own notifications"
   ON public.user_notifications
   FOR UPDATE
   USING (auth.uid() = user_id);
 
 -- Policy: Users can delete their own notifications
+DROP POLICY IF EXISTS "Users can delete their own notifications" ON public.user_notifications;
 CREATE POLICY "Users can delete their own notifications"
   ON public.user_notifications
   FOR DELETE
   USING (auth.uid() = user_id);
 
 -- Policy: Service role can insert notifications for any user
+DROP POLICY IF EXISTS "Service role can insert notifications" ON public.user_notifications;
 CREATE POLICY "Service role can insert notifications"
   ON public.user_notifications
   FOR INSERT
@@ -62,6 +66,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger to automatically update updated_at
+DROP TRIGGER IF EXISTS trigger_update_user_notifications_updated_at ON public.user_notifications;
 CREATE TRIGGER trigger_update_user_notifications_updated_at
   BEFORE UPDATE ON public.user_notifications
   FOR EACH ROW

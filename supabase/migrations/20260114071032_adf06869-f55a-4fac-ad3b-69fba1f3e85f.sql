@@ -17,6 +17,7 @@ CREATE INDEX IF NOT EXISTS idx_task_comments_created_at ON task_comments(created
 
 ALTER TABLE task_comments ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view comments on accessible tasks" ON task_comments;
 CREATE POLICY "Users can view comments on accessible tasks"
   ON task_comments FOR SELECT
   USING (
@@ -35,6 +36,7 @@ CREATE POLICY "Users can view comments on accessible tasks"
     )
   );
 
+DROP POLICY IF EXISTS "Users can create comments on accessible tasks" ON task_comments;
 CREATE POLICY "Users can create comments on accessible tasks"
   ON task_comments FOR INSERT
   WITH CHECK (
@@ -54,6 +56,7 @@ CREATE POLICY "Users can create comments on accessible tasks"
     )
   );
 
+DROP POLICY IF EXISTS "Users can update their own comments" ON task_comments;
 CREATE POLICY "Users can update their own comments"
   ON task_comments FOR UPDATE
   USING (author_id = auth.uid())
@@ -73,6 +76,7 @@ CREATE INDEX IF NOT EXISTS idx_task_comment_mentions_mentioned_user_id ON task_c
 
 ALTER TABLE task_comment_mentions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view mentions in accessible comments" ON task_comment_mentions;
 CREATE POLICY "Users can view mentions in accessible comments"
   ON task_comment_mentions FOR SELECT
   USING (
@@ -93,6 +97,7 @@ CREATE POLICY "Users can view mentions in accessible comments"
     )
   );
 
+DROP POLICY IF EXISTS "Users can create mentions when commenting" ON task_comment_mentions;
 CREATE POLICY "Users can create mentions when commenting"
   ON task_comment_mentions FOR INSERT
   WITH CHECK (
@@ -121,6 +126,7 @@ CREATE INDEX IF NOT EXISTS idx_task_history_actor_id ON task_history(actor_id);
 
 ALTER TABLE task_history ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view history on accessible tasks" ON task_history;
 CREATE POLICY "Users can view history on accessible tasks"
   ON task_history FOR SELECT
   USING (
@@ -161,10 +167,12 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications(user_i
 
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own notifications" ON notifications;
 CREATE POLICY "Users can view their own notifications"
   ON notifications FOR SELECT
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Users can update their own notifications" ON notifications;
 CREATE POLICY "Users can update their own notifications"
   ON notifications FOR UPDATE
   USING (user_id = auth.uid())
@@ -180,6 +188,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS task_comments_updated_at ON task_comments;
 CREATE TRIGGER task_comments_updated_at
   BEFORE UPDATE ON task_comments
   FOR EACH ROW

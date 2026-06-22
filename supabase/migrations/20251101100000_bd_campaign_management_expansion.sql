@@ -60,10 +60,21 @@ CREATE TABLE IF NOT EXISTS public.campaign_contacts (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+ALTER TABLE public.campaign_contacts
+  ADD COLUMN IF NOT EXISTS assigned_to UUID REFERENCES auth.users(id),
+  ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES auth.users(id),
+  ADD COLUMN IF NOT EXISTS linkedin_request_sent_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS linkedin_accepted_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS linkedin_message_sent_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS email_sent_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS last_activity_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS personalization_notes TEXT;
+
 CREATE INDEX IF NOT EXISTS idx_campaign_contacts_campaign_id ON public.campaign_contacts(campaign_id);
 CREATE INDEX IF NOT EXISTS idx_campaign_contacts_status ON public.campaign_contacts(status);
 CREATE INDEX IF NOT EXISTS idx_campaign_contacts_assigned_to ON public.campaign_contacts(assigned_to);
 
+DROP TRIGGER IF EXISTS update_campaign_contacts_updated_at ON public.campaign_contacts;
 CREATE TRIGGER update_campaign_contacts_updated_at
   BEFORE UPDATE ON public.campaign_contacts
   FOR EACH ROW
@@ -71,11 +82,13 @@ CREATE TRIGGER update_campaign_contacts_updated_at
 
 ALTER TABLE public.campaign_contacts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Campaign contacts readable by authenticated users" ON public.campaign_contacts;
 CREATE POLICY "Campaign contacts readable by authenticated users"
   ON public.campaign_contacts FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Campaign contacts insert follows campaign ownership" ON public.campaign_contacts;
 CREATE POLICY "Campaign contacts insert follows campaign ownership"
   ON public.campaign_contacts FOR INSERT
   TO authenticated
@@ -94,6 +107,7 @@ CREATE POLICY "Campaign contacts insert follows campaign ownership"
     )
   );
 
+DROP POLICY IF EXISTS "Campaign contacts update by owners" ON public.campaign_contacts;
 CREATE POLICY "Campaign contacts update by owners"
   ON public.campaign_contacts FOR UPDATE
   TO authenticated
@@ -128,6 +142,7 @@ CREATE POLICY "Campaign contacts update by owners"
     )
   );
 
+DROP POLICY IF EXISTS "Campaign contacts delete by owners" ON public.campaign_contacts;
 CREATE POLICY "Campaign contacts delete by owners"
   ON public.campaign_contacts FOR DELETE
   TO authenticated
@@ -170,6 +185,7 @@ CREATE INDEX IF NOT EXISTS idx_campaign_activities_campaign_id ON public.campaig
 CREATE INDEX IF NOT EXISTS idx_campaign_activities_contact_id ON public.campaign_activities(contact_id);
 CREATE INDEX IF NOT EXISTS idx_campaign_activities_type ON public.campaign_activities(activity_type);
 
+DROP TRIGGER IF EXISTS update_campaign_activities_updated_at ON public.campaign_activities;
 CREATE TRIGGER update_campaign_activities_updated_at
   BEFORE UPDATE ON public.campaign_activities
   FOR EACH ROW
@@ -177,11 +193,13 @@ CREATE TRIGGER update_campaign_activities_updated_at
 
 ALTER TABLE public.campaign_activities ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Campaign activities readable by authenticated users" ON public.campaign_activities;
 CREATE POLICY "Campaign activities readable by authenticated users"
   ON public.campaign_activities FOR SELECT
   TO authenticated
-  USING (true);
+  USING (true  );
 
+DROP POLICY IF EXISTS "Campaign activities insert follows campaign ownership" ON public.campaign_activities;
 CREATE POLICY "Campaign activities insert follows campaign ownership"
   ON public.campaign_activities FOR INSERT
   TO authenticated
@@ -200,6 +218,7 @@ CREATE POLICY "Campaign activities insert follows campaign ownership"
     )
   );
 
+DROP POLICY IF EXISTS "Campaign activities update by performer or owners" ON public.campaign_activities;
 CREATE POLICY "Campaign activities update by performer or owners"
   ON public.campaign_activities FOR UPDATE
   TO authenticated
@@ -232,6 +251,7 @@ CREATE POLICY "Campaign activities update by performer or owners"
     )
   );
 
+DROP POLICY IF EXISTS "Campaign activities delete by owners" ON public.campaign_activities;
 CREATE POLICY "Campaign activities delete by owners"
   ON public.campaign_activities FOR DELETE
   TO authenticated
@@ -275,6 +295,7 @@ CREATE INDEX IF NOT EXISTS idx_campaign_ai_tasks_campaign_id ON public.campaign_
 CREATE INDEX IF NOT EXISTS idx_campaign_ai_tasks_contact_id ON public.campaign_ai_tasks(contact_id);
 CREATE INDEX IF NOT EXISTS idx_campaign_ai_tasks_status ON public.campaign_ai_tasks(status);
 
+DROP TRIGGER IF EXISTS update_campaign_ai_tasks_updated_at ON public.campaign_ai_tasks;
 CREATE TRIGGER update_campaign_ai_tasks_updated_at
   BEFORE UPDATE ON public.campaign_ai_tasks
   FOR EACH ROW
@@ -282,11 +303,13 @@ CREATE TRIGGER update_campaign_ai_tasks_updated_at
 
 ALTER TABLE public.campaign_ai_tasks ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Campaign AI tasks readable by authenticated users" ON public.campaign_ai_tasks;
 CREATE POLICY "Campaign AI tasks readable by authenticated users"
   ON public.campaign_ai_tasks FOR SELECT
   TO authenticated
-  USING (true);
+  USING (true  );
 
+DROP POLICY IF EXISTS "Campaign AI tasks insert follows campaign ownership" ON public.campaign_ai_tasks;
 CREATE POLICY "Campaign AI tasks insert follows campaign ownership"
   ON public.campaign_ai_tasks FOR INSERT
   TO authenticated
@@ -305,6 +328,7 @@ CREATE POLICY "Campaign AI tasks insert follows campaign ownership"
     )
   );
 
+DROP POLICY IF EXISTS "Campaign AI tasks update by creators or owners" ON public.campaign_ai_tasks;
 CREATE POLICY "Campaign AI tasks update by creators or owners"
   ON public.campaign_ai_tasks FOR UPDATE
   TO authenticated
@@ -337,6 +361,7 @@ CREATE POLICY "Campaign AI tasks update by creators or owners"
     )
   );
 
+DROP POLICY IF EXISTS "Campaign AI tasks delete by owners" ON public.campaign_ai_tasks;
 CREATE POLICY "Campaign AI tasks delete by owners"
   ON public.campaign_ai_tasks FOR DELETE
   TO authenticated

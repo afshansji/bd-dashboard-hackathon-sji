@@ -103,7 +103,7 @@ CREATE POLICY "Users can view validation results for their campaigns"
     EXISTS (
       SELECT 1
       FROM public.campaign_contacts cc
-      JOIN public.campaigns c ON c.id = cc.campaign_id
+      JOIN public.bd_campaigns c ON c.id = cc.campaign_id
       WHERE cc.id = campaign_contact_id
         AND (
           c.created_by = auth.uid() OR

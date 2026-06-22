@@ -1,3 +1,15 @@
+-- Create checklist_templates early for fresh databases
+CREATE TABLE IF NOT EXISTS public.checklist_templates (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  stage text,
+  items jsonb NOT NULL DEFAULT '[]'::jsonb,
+  is_active boolean DEFAULT true,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  created_by uuid REFERENCES public.users(id)
+);
+
 -- Add items column to checklist_templates to match edge function expectations
 ALTER TABLE checklist_templates 
 ADD COLUMN IF NOT EXISTS items jsonb DEFAULT '[]'::jsonb;

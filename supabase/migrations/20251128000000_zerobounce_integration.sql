@@ -20,6 +20,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_zerobounce_config_active
   ON public.zerobounce_config(is_active)
   WHERE is_active = true;
 
+DROP TRIGGER IF EXISTS update_zerobounce_config_updated_at ON public.zerobounce_config;
 CREATE TRIGGER update_zerobounce_config_updated_at
   BEFORE UPDATE ON public.zerobounce_config
   FOR EACH ROW
@@ -27,6 +28,7 @@ CREATE TRIGGER update_zerobounce_config_updated_at
 
 ALTER TABLE public.zerobounce_config ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Super admins can manage Zerobounce config" ON public.zerobounce_config;
 CREATE POLICY "Super admins can manage Zerobounce config"
   ON public.zerobounce_config FOR ALL
   TO authenticated
@@ -77,6 +79,7 @@ CREATE INDEX IF NOT EXISTS idx_zerobounce_validations_created_at ON public.zerob
 
 ALTER TABLE public.zerobounce_validations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view validation results for their campaigns" ON public.zerobounce_validations;
 CREATE POLICY "Users can view validation results for their campaigns"
   ON public.zerobounce_validations FOR SELECT
   TO authenticated
@@ -86,7 +89,7 @@ CREATE POLICY "Users can view validation results for their campaigns"
     EXISTS (
       SELECT 1
       FROM public.campaign_contacts cc
-      JOIN public.campaigns c ON c.id = cc.campaign_id
+      JOIN public.bd_campaigns c ON c.id = cc.campaign_id
       WHERE cc.id = campaign_contact_id
         AND (
           c.created_by = auth.uid() OR
@@ -95,6 +98,7 @@ CREATE POLICY "Users can view validation results for their campaigns"
     )
   );
 
+DROP POLICY IF EXISTS "Users can insert validation results" ON public.zerobounce_validations;
 CREATE POLICY "Users can insert validation results"
   ON public.zerobounce_validations FOR INSERT
   TO authenticated

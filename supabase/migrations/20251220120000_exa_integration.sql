@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS public.campaign_research (
 CREATE INDEX IF NOT EXISTS idx_campaign_research_campaign_id ON public.campaign_research(campaign_id);
 CREATE INDEX IF NOT EXISTS idx_campaign_research_status ON public.campaign_research(status);
 
+DROP TRIGGER IF EXISTS update_campaign_research_updated_at ON public.campaign_research;
 CREATE TRIGGER update_campaign_research_updated_at
   BEFORE UPDATE ON public.campaign_research
   FOR EACH ROW
@@ -51,6 +52,7 @@ CREATE TRIGGER update_campaign_research_updated_at
 
 ALTER TABLE public.campaign_research ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Campaign collaborators can view research" ON public.campaign_research;
 CREATE POLICY "Campaign collaborators can view research"
   ON public.campaign_research FOR SELECT
   TO authenticated
@@ -68,6 +70,7 @@ CREATE POLICY "Campaign collaborators can view research"
     )
   );
 
+DROP POLICY IF EXISTS "Campaign collaborators can insert research" ON public.campaign_research;
 CREATE POLICY "Campaign collaborators can insert research"
   ON public.campaign_research FOR INSERT
   TO authenticated
@@ -87,6 +90,7 @@ CREATE POLICY "Campaign collaborators can insert research"
     )
   );
 
+DROP POLICY IF EXISTS "Campaign collaborators can update research" ON public.campaign_research;
 CREATE POLICY "Campaign collaborators can update research"
   ON public.campaign_research FOR UPDATE
   TO authenticated
@@ -119,6 +123,7 @@ CREATE POLICY "Campaign collaborators can update research"
     )
   );
 
+DROP POLICY IF EXISTS "Campaign collaborators can delete research" ON public.campaign_research;
 CREATE POLICY "Campaign collaborators can delete research"
   ON public.campaign_research FOR DELETE
   TO authenticated
@@ -145,6 +150,7 @@ CREATE TABLE IF NOT EXISTS public.lead_import_jobs (
 CREATE INDEX IF NOT EXISTS idx_lead_import_jobs_status ON public.lead_import_jobs(status);
 CREATE INDEX IF NOT EXISTS idx_lead_import_jobs_initiated_by ON public.lead_import_jobs(initiated_by);
 
+DROP TRIGGER IF EXISTS update_lead_import_jobs_updated_at ON public.lead_import_jobs;
 CREATE TRIGGER update_lead_import_jobs_updated_at
   BEFORE UPDATE ON public.lead_import_jobs
   FOR EACH ROW
@@ -152,6 +158,7 @@ CREATE TRIGGER update_lead_import_jobs_updated_at
 
 ALTER TABLE public.lead_import_jobs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Admins and job creators can view lead imports" ON public.lead_import_jobs;
 CREATE POLICY "Admins and job creators can view lead imports"
   ON public.lead_import_jobs FOR SELECT
   TO authenticated
@@ -161,6 +168,7 @@ CREATE POLICY "Admins and job creators can view lead imports"
     auth.uid() = initiated_by
   );
 
+DROP POLICY IF EXISTS "Admins and job creators can insert lead imports" ON public.lead_import_jobs;
 CREATE POLICY "Admins and job creators can insert lead imports"
   ON public.lead_import_jobs FOR INSERT
   TO authenticated
@@ -170,6 +178,7 @@ CREATE POLICY "Admins and job creators can insert lead imports"
     initiated_by = auth.uid()
   );
 
+DROP POLICY IF EXISTS "Admins and job creators can update lead imports" ON public.lead_import_jobs;
 CREATE POLICY "Admins and job creators can update lead imports"
   ON public.lead_import_jobs FOR UPDATE
   TO authenticated
@@ -184,6 +193,7 @@ CREATE POLICY "Admins and job creators can update lead imports"
     auth.uid() = initiated_by
   );
 
+DROP POLICY IF EXISTS "Admins and job creators can delete lead imports" ON public.lead_import_jobs;
 CREATE POLICY "Admins and job creators can delete lead imports"
   ON public.lead_import_jobs FOR DELETE
   TO authenticated

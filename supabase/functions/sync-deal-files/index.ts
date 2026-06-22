@@ -3,37 +3,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.75.0";
 import { encodeBase64, decodeBase64 } from "https://deno.land/std@0.224.0/encoding/base64.ts";
 
-interface PdfTextItem {
-  str?: string;
-}
-
-interface PdfPage {
-  getTextContent(): Promise<{ items: PdfTextItem[] }>;
-}
-
-interface PdfDocument {
-  numPages: number;
-  getPage(pageNumber: number): Promise<PdfPage>;
-  cleanup?: () => void;
-  destroy?: () => void;
-}
-
-interface PdfJsModule {
-  getDocument: (src: { data: Uint8Array }) => { promise: Promise<PdfDocument> };
-  GlobalWorkerOptions?: { workerSrc?: string };
-}
-
-let pdfjsLib: any | null = null;
-try {
-  pdfjsLib = await import("https://esm.sh/pdfjs-dist@3.11.174/legacy/build/pdf.mjs");
-  if (pdfjsLib?.GlobalWorkerOptions) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://esm.sh/pdfjs-dist@3.11.174/legacy/build/pdf.worker.mjs";
-  }
-} catch (error) {
-  console.warn("[Deal Files] Failed to load pdfjs-dist; PDF parsing will fall back to base64", error);
-  pdfjsLib = null;
-}
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -74,7 +43,7 @@ interface GoogleServiceAccount {
 
 type ConversionResult = {
   payload: Record<string, unknown>;
-  parser: "pdfjs-dist" | "base64" | "google-docs-text-export" | "google-sheets-csv-export" | "google-slides-text-export";
+  parser: "base64" | "google-docs-text-export" | "google-sheets-csv-export" | "google-slides-text-export";
 };
 
 serve(async (req) => {
@@ -604,46 +573,8 @@ async function convertFileToJson(file: DriveFile, data: Uint8Array): Promise<Con
     };
   }
 
-  if (file.mimeType === "application/pdf" && pdfjsLib?.getDocument) {
-    try {
-      const pdf = await pdfjsLib.getDocument({ data }).promise;
-      const pages: Array<{ pageNumber: number; text: string }> = [];
-
-      for (let index = 1; index <= pdf.numPages; index++) {
-        const page = await pdf.getPage(index);
-        const textContent = await page.getTextContent();
-        const text = textContent.items
-          .map((item: any) => (typeof item.str === "string" ? item.str : ""))
-          .join(" ")
-          .replace(/\s+/g, " ")
-          .trim();
-        pages.push({ pageNumber: index, text });
-      }
-
-      try {
-        if (typeof pdf.cleanup === "function") {
-          pdf.cleanup();
-        }
-        if (typeof pdf.destroy === "function") {
-          pdf.destroy();
-        }
-      } catch (_cleanupError) {
-        // Ignore cleanup issues; pdf.js sometimes throws for already-cleaned documents
-      }
-
-      return {
-        parser: "pdfjs-dist",
-        payload: {
-          type: "pdf",
-          pageCount: pdf.numPages,
-          pages,
-        },
-      };
-    } catch (pdfError) {
-      console.warn(`[Deal Files] Failed to parse PDF ${file.id}, falling back to base64:`, pdfError);
-    }
-  }
-
+  // PDF text extraction via pdfjs-dist is unavailable in Edge Functions (requires native canvas).
+  // Store PDFs as base64; downstream AI can process if needed.
   return {
     parser: "base64",
     payload: {

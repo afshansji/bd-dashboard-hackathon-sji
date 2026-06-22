@@ -23,7 +23,8 @@ create index if not exists idx_feedback_attachments_created_at
 alter table public.feedback_attachments enable row level security;
 
 -- 3. Create RLS policies for attachments
-create policy if not exists "Users can view own feedback attachments"
+drop policy if exists "Users can view own feedback attachments" on public.feedback_attachments;
+create policy "Users can view own feedback attachments"
   on public.feedback_attachments
   for select
   using (
@@ -34,7 +35,8 @@ create policy if not exists "Users can view own feedback attachments"
     )
   );
 
-create policy if not exists "Users can insert feedback attachments"
+drop policy if exists "Users can insert feedback attachments" on public.feedback_attachments;
+create policy "Users can insert feedback attachments"
   on public.feedback_attachments
   for insert
   with check (
