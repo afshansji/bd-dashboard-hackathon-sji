@@ -1,0 +1,86 @@
+[1mdiff --git a/public/adminpanel/documentation/analytics-api.md b/public/adminpanel/documentation/analytics-api.md[m
+[1mindex 493814a..667a7be 100644[m
+[1m--- a/public/adminpanel/documentation/analytics-api.md[m
+[1m+++ b/public/adminpanel/documentation/analytics-api.md[m
+[36m@@ -102,6 +102,12 @@[m [mTop-level response:[m
+ - `summary`: totals[m
+ - `users`: **object keyed by email**[m
+ [m
+[32m+[m[32mPer-user fields (values are within the requested period window):[m
+[32m+[m
+[32m+[m[32m- `last_active_at`: most recent activity timestamp (any action)[m
+[32m+[m[32m- `last_login_at`: most recent login timestamp (action=`login`)[m
+[32m+[m[32m- `inactive_for_seconds`: seconds since `last_active_at`, calculated relative to `meta.period_end` (null if unknown)[m
+[32m+[m
+ Important notes:[m
+ [m
+ - If a user has no email in `profiles.email`, they appear as `unknown-<user_id>` keys.[m
+[1mdiff --git a/supabase/functions/_shared/analyticsAggregator.ts b/supabase/functions/_shared/analyticsAggregator.ts[m
+[1mindex a2ebc21..2283014 100644[m
+[1m--- a/supabase/functions/_shared/analyticsAggregator.ts[m
+[1m+++ b/supabase/functions/_shared/analyticsAggregator.ts[m
+[36m@@ -35,7 +35,9 @@[m [mexport interface AggregatedUserStats {[m
+   activity_score: number;[m
+   activity_count: number;[m
+   login_count: number;[m
+[32m+[m[32m  last_login_at: string | null;[m
+   last_active_at: string | null;[m
+[32m+[m[32m  inactive_for_seconds: number | null;[m
+   activity_breakdown: Record<string, number>;[m
+ }[m
+ [m
+[36m@@ -111,6 +113,7 @@[m [mexport async function aggregateUserAnalytics([m
+       loginCount: number;[m
+       activityScore: number;[m
+       lastActiveAt: string | null;[m
+[32m+[m[32m      lastLoginAt: string | null;[m
+       breakdown: Record<string, number>;[m
+     }[m
+   >();[m
+[36m@@ -121,6 +124,7 @@[m [mexport async function aggregateUserAnalytics([m
+       loginCount: 0,[m
+       activityScore: 0,[m
+       lastActiveAt: log.created_at ?? null,[m
+[32m+[m[32m      lastLoginAt: null,[m
+       breakdown: {} as Record<string, number>,[m
+     };[m
+ [m
+[36m@@ -130,6 +134,9 @@[m [mexport async function aggregateUserAnalytics([m
+ [m
+     if (log.action === "login") {[m
+       current.loginCount += 1;[m
+[32m+[m[32m      if (!current.lastLoginAt || new Date(log.created_at) > new Date(current.lastLoginAt)) {[m
+[32m+[m[32m        current.lastLoginAt = log.created_at;[m
+[32m+[m[32m      }[m
+     }[m
+ [m
+     if (!current.lastActiveAt || new Date(log.created_at) > new Date(current.lastActiveAt)) {[m
+[36m@@ -157,12 +164,18 @@[m [mexport async function aggregateUserAnalytics([m
+ [m
+   const profileById = new Map(profiles.map((p) => [p.id, p]));[m
+ [m
+[32m+[m[32m  const periodEndMs = options.periodEnd.getTime();[m
+   const allEntries: Array<{ emailKey: string; stats: AggregatedUserStats }> = [];[m
+   for (const [userId, stats] of activityByUser.entries()) {[m
+     const profile = profileById.get(userId);[m
+     const email = profile?.email?.trim() || "";[m
+     const name = (profile?.full_name || profile?.email || "Unknown User")?.toString();[m
+     const emailKey = email || `unknown-${userId}`;[m
+[32m+[m[32m    const lastActiveMs = stats.lastActiveAt ? new Date(stats.lastActiveAt).getTime() : null;[m
+[32m+[m[32m    const inactiveForSeconds =[m
+[32m+[m[32m      lastActiveMs !== null && Number.isFinite(lastActiveMs)[m
+[32m+[m[32m        ? Math.max(0, Math.floor((periodEndMs - lastActiveMs) / 1000))[m
+[32m+[m[32m        : null;[m
+ [m
+     allEntries.push({[m
+       emailKey,[m
+[36m@@ -172,7 +185,9 @@[m [mexport async function aggregateUserAnalytics([m
+         activity_score: stats.activityScore,[m
+         activity_count: stats.activityCount,[m
+         login_count: stats.loginCount,[m
+[32m+[m[32m        last_login_at: stats.lastLoginAt,[m
+         last_active_at: stats.lastActiveAt,[m
+[32m+[m[32m        inactive_for_seconds: inactiveForSeconds,[m
+         activity_breakdown: stats.breakdown,[m
+       },[m
+     });[m

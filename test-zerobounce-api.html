@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Zerobounce API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            background: #f4f4f4;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Zerobounce API Key</h1>
+    <p>This will test your Zerobounce API key directly without going through the edge function.</p>
+    
+    <div>
+        <label for="apiKey">Enter your Zerobounce API Key:</label>
+        <input type="text" id="apiKey" placeholder="Your Zerobounce API key">
+        
+        <button onclick="testApiKey()">Test API Key (Get Credits)</button>
+        <button onclick="testValidation()">Test Email Validation</button>
+    </div>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function testApiKey() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            if (!apiKey) {
+                resultDiv.innerHTML = '<div class="result error">Please enter an API key</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="result">Testing API key...</div>';
+            
+            try {
+                const url = `https://api.zerobounce.net/v2/getcredits?api_key=${apiKey}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok && data.Credits !== undefined) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <strong>✅ SUCCESS!</strong><br><br>
+                            <strong>Credits Remaining:</strong> ${data.Credits}<br><br>
+                            <strong>Full Response:</strong><br>
+                            ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <strong>❌ FAILED!</strong><br><br>
+                            <strong>Status:</strong> ${response.status}<br>
+                            <strong>Response:</strong><br>
+                            ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>❌ ERROR!</strong><br><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        async function testValidation() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            if (!apiKey) {
+                resultDiv.innerHTML = '<div class="result error">Please enter an API key</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="result">Validating test email...</div>';
+            
+            try {
+                const testEmail = 'disposable@example.com';
+                const url = `https://api.zerobounce.net/v2/validate?api_key=${apiKey}&email=${encodeURIComponent(testEmail)}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <strong>✅ SUCCESS!</strong><br><br>
+                            <strong>Test Email:</strong> ${testEmail}<br>
+                            <strong>Status:</strong> ${data.status}<br>
+                            <strong>Sub-status:</strong> ${data.sub_status || 'N/A'}<br><br>
+                            <strong>Full Response:</strong><br>
+                            ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <strong>❌ FAILED!</strong><br><br>
+                            <strong>Status:</strong> ${response.status}<br>
+                            <strong>Response:</strong><br>
+                            ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>❌ ERROR!</strong><br><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+

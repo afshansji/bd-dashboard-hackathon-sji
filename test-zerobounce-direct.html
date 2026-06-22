@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zerobounce API Direct Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border-left: 4px solid #0066cc;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #0066cc;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0052a3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .loading {
+            display: inline-block;
+            margin-left: 10px;
+            color: #666;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Zerobounce API Direct Test</h1>
+        <p class="subtitle">Test your Zerobounce API key directly (no backend required)</p>
+
+        <div class="test-section">
+            <h3>1. Test Get Credits API</h3>
+            <p>This verifies your API key is valid and shows your remaining credits.</p>
+            <input type="text" id="apiKey1" placeholder="Enter your Zerobounce API key" value="3e4f6c721add4fa2a781195120472499">
+            <button onclick="testGetCredits()">Test Get Credits</button>
+            <span class="loading" id="loading1" style="display: none;">Testing...</span>
+            <div id="result1"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Test Email Validation API</h3>
+            <p>This validates an email address using your API key.</p>
+            <input type="text" id="apiKey2" placeholder="Enter your Zerobounce API key" value="3e4f6c721add4fa2a781195120472499">
+            <input type="email" id="testEmail" placeholder="Enter email to validate" value="test@example.com">
+            <button onclick="testValidateEmail()">Test Email Validation</button>
+            <span class="loading" id="loading2" style="display: none;">Validating...</span>
+            <div id="result2"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Test Response Data Types</h3>
+            <p>This checks what data types Zerobounce returns (for debugging).</p>
+            <input type="text" id="apiKey3" placeholder="Enter your Zerobounce API key" value="3e4f6c721add4fa2a781195120472499">
+            <input type="email" id="testEmail2" placeholder="Enter email to validate" value="admin@gmail.com">
+            <button onclick="testDataTypes()">Check Data Types</button>
+            <span class="loading" id="loading3" style="display: none;">Checking...</span>
+            <div id="result3"></div>
+        </div>
+
+        <div class="info" style="margin-top: 30px; padding: 15px;">
+            <strong>ℹ️ How to use:</strong><br><br>
+            1. Your API key is pre-filled: <code>3e4f6c721add4fa2a781195120472499</code><br>
+            2. Click "Test Get Credits" to verify the API key works<br>
+            3. Expected result: Should show 3524 credits<br>
+            4. Try validating an email to see detailed validation data<br>
+            5. Use Test 3 to see exact data types returned by Zerobounce API
+        </div>
+    </div>
+
+    <script>
+        const ZEROBOUNCE_API_BASE = 'https://api.zerobounce.net/v2';
+
+        async function testGetCredits() {
+            const apiKey = document.getElementById('apiKey1').value.trim();
+            const loading = document.getElementById('loading1');
+            const resultDiv = document.getElementById('result1');
+            
+            if (!apiKey) {
+                showResult(resultDiv, 'error', 'Please enter an API key');
+                return;
+            }
+
+            loading.style.display = 'inline';
+            resultDiv.innerHTML = '';
+
+            try {
+                const url = `${ZEROBOUNCE_API_BASE}/getcredits?api_key=${apiKey}`;
+                console.log('Testing URL:', url);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+
+                if (response.ok && data.Credits !== undefined) {
+                    showResult(resultDiv, 'success', 
+                        `✅ SUCCESS!\n\n` +
+                        `API Key: Valid\n` +
+                        `Credits: ${data.Credits}\n` +
+                        `Status: ${response.status}\n\n` +
+                        `Full Response:\n${JSON.stringify(data, null, 2)}`
+                    );
+                } else {
+                    showResult(resultDiv, 'error', 
+                        `❌ FAILED\n\n` +
+                        `Status: ${response.status}\n` +
+                        `Response:\n${JSON.stringify(data, null, 2)}`
+                    );
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                showResult(resultDiv, 'error', 
+                    `❌ ERROR\n\n` +
+                    `${error.message}\n\n` +
+                    `This might be a network/CORS error. Check the browser console for details.`
+                );
+                console.error('Error:', error);
+            }
+        }
+
+        async function testValidateEmail() {
+            const apiKey = document.getElementById('apiKey2').value.trim();
+            const email = document.getElementById('testEmail').value.trim();
+            const loading = document.getElementById('loading2');
+            const resultDiv = document.getElementById('result2');
+            
+            if (!apiKey) {
+                showResult(resultDiv, 'error', 'Please enter an API key');
+                return;
+            }
+            if (!email) {
+                showResult(resultDiv, 'error', 'Please enter an email address');
+                return;
+            }
+
+            loading.style.display = 'inline';
+            resultDiv.innerHTML = '';
+
+            try {
+                const url = `${ZEROBOUNCE_API_BASE}/validate?api_key=${apiKey}&email=${encodeURIComponent(email)}`;
+                console.log('Validating email:', email);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+
+                if (response.ok && data.status) {
+                    const statusEmoji = data.status === 'valid' ? '✅' : 
+                                       data.status === 'invalid' ? '❌' : 
+                                       data.status === 'catch-all' ? '⚠️' : 'ℹ️';
+                    
+                    showResult(resultDiv, 'success', 
+                        `${statusEmoji} VALIDATION RESULT\n\n` +
+                        `Email: ${email}\n` +
+                        `Status: ${data.status}\n` +
+                        `Sub Status: ${data.sub_status || 'N/A'}\n` +
+                        `Free Email: ${data.free_email}\n` +
+                        `Did You Mean: ${data.did_you_mean || 'N/A'}\n` +
+                        `Domain Age: ${data.domain_age_days || 'N/A'} days\n` +
+                        `MX Found: ${data.mx_found}\n` +
+                        `MX Record: ${data.mx_record || 'N/A'}\n` +
+                        `SMTP Provider: ${data.smtp_provider || 'N/A'}\n\n` +
+                        `Full Response:\n${JSON.stringify(data, null, 2)}`
+                    );
+                } else {
+                    showResult(resultDiv, 'error', 
+                        `❌ VALIDATION FAILED\n\n` +
+                        `Status: ${response.status}\n` +
+                        `Response:\n${JSON.stringify(data, null, 2)}`
+                    );
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                showResult(resultDiv, 'error', 
+                    `❌ ERROR\n\n` +
+                    `${error.message}\n\n` +
+                    `Check the browser console for details.`
+                );
+                console.error('Error:', error);
+            }
+        }
+
+        async function testDataTypes() {
+            const apiKey = document.getElementById('apiKey3').value.trim();
+            const email = document.getElementById('testEmail2').value.trim();
+            const loading = document.getElementById('loading3');
+            const resultDiv = document.getElementById('result3');
+            
+            if (!apiKey) {
+                showResult(resultDiv, 'error', 'Please enter an API key');
+                return;
+            }
+            if (!email) {
+                showResult(resultDiv, 'error', 'Please enter an email address');
+                return;
+            }
+
+            loading.style.display = 'inline';
+            resultDiv.innerHTML = '';
+
+            try {
+                const url = `${ZEROBOUNCE_API_BASE}/validate?api_key=${apiKey}&email=${encodeURIComponent(email)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+
+                if (response.ok && data) {
+                    let typeAnalysis = '🔬 DATA TYPE ANALYSIS\n\n';
+                    
+                    // Check critical fields that might cause database issues
+                    const criticalFields = [
+                        'domain_age_days',
+                        'mx_found',
+                        'free_email',
+                        'status'
+                    ];
+                    
+                    criticalFields.forEach(field => {
+                        const value = data[field];
+                        const type = typeof value;
+                        const isNull = value === null;
+                        typeAnalysis += `${field}:\n`;
+                        typeAnalysis += `  Value: ${JSON.stringify(value)}\n`;
+                        typeAnalysis += `  Type: ${type}\n`;
+                        typeAnalysis += `  Is Null: ${isNull}\n\n`;
+                    });
+
+                    typeAnalysis += '\n📋 FULL OBJECT:\n' + JSON.stringify(data, null, 2);
+                    
+                    showResult(resultDiv, 'info', typeAnalysis);
+                } else {
+                    showResult(resultDiv, 'error', 
+                        `❌ REQUEST FAILED\n\n` +
+                        `Status: ${response.status}\n` +
+                        `Response:\n${JSON.stringify(data, null, 2)}`
+                    );
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                showResult(resultDiv, 'error', 
+                    `❌ ERROR\n\n${error.message}`
+                );
+                console.error('Error:', error);
+            }
+        }
+
+        function showResult(div, type, message) {
+            div.className = `result ${type}`;
+            div.textContent = message;
+            div.style.display = 'block';
+        }
+
+        // Auto-test on load with the provided API key
+        window.addEventListener('load', () => {
+            console.log('Page loaded. Ready to test Zerobounce API.');
+            console.log('Pre-filled API key:', document.getElementById('apiKey1').value);
+        });
+    </script>
+</body>
+</html>
+

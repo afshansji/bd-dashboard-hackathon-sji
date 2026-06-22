@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Email Sender - SJ BD Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        button {
+            background-color: #0070f3;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0051cc;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+        .instructions {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .instructions p {
+            margin: 5px 0;
+            color: #856404;
+        }
+        .instructions code {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🧪 Test Email Sender</h1>
+        
+        <div class="instructions">
+            <h3>⚙️ Setup Instructions</h3>
+            <p><strong>1.</strong> Make sure you're logged into the dashboard</p>
+            <p><strong>2.</strong> Verify SendGrid is configured in Supabase</p>
+            <p><strong>3.</strong> Fill in the form below and click Send Test Email</p>
+        </div>
+
+        <form id="emailForm">
+            <div class="form-group">
+                <label for="toEmail">To Email Address:</label>
+                <input 
+                    type="email" 
+                    id="toEmail" 
+                    value="wadud.shuvro@sjinnovation.com" 
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="subject">Subject:</label>
+                <input 
+                    type="text" 
+                    id="subject" 
+                    value="🧪 Test Email from SJ BD Dashboard - Automation System Verification" 
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="body">Email Body (HTML):</label>
+                <textarea id="body" required>
+<h2>✅ Email Automation System Test</h2>
+
+<p>Hello Wadud Shuvro!</p>
+
+<p>This is a test email to verify that the email automation system is working correctly.</p>
+
+<p><strong>Test Details:</strong></p>
+<ul>
+    <li><strong>Date:</strong> ${new Date().toLocaleString()}</li>
+    <li><strong>System:</strong> SJ BD Dashboard</li>
+    <li><strong>Purpose:</strong> Automation System Verification</li>
+</ul>
+
+<p>If you received this email, it means:</p>
+<ol>
+    <li>✅ SendGrid is properly configured</li>
+    <li>✅ The send-campaign-email function is working</li>
+    <li>✅ Email delivery is operational</li>
+</ol>
+
+<p><strong>Next Steps:</strong></p>
+<p>You can now proceed to enroll contacts in sequences, and they should receive emails according to the configured schedule.</p>
+
+<hr>
+<p style="color: #666; font-size: 12px;">
+This is an automated test email from SJ Innovation Business Development Dashboard.<br>
+If you have any questions, please contact your system administrator.
+</p>
+                </textarea>
+            </div>
+
+            <button type="submit" id="sendBtn">📧 Send Test Email</button>
+        </form>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // Initialize Supabase client
+        // Note: You need to replace these with your actual Supabase credentials
+        // You can find them in your Supabase project settings
+        const SUPABASE_URL = window.location.origin.includes('localhost') 
+            ? 'YOUR_SUPABASE_URL' 
+            : import.meta.env?.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL';
+        
+        const SUPABASE_ANON_KEY = window.location.origin.includes('localhost') 
+            ? 'YOUR_SUPABASE_ANON_KEY' 
+            : import.meta.env?.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+
+        let supabase;
+        
+        try {
+            supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (error) {
+            console.error('Failed to initialize Supabase:', error);
+            showResult('error', 'Configuration Error: Please update the Supabase credentials in the script. Check the browser console for details.');
+        }
+
+        const form = document.getElementById('emailForm');
+        const sendBtn = document.getElementById('sendBtn');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const toEmail = document.getElementById('toEmail').value;
+            const subject = document.getElementById('subject').value;
+            const body = document.getElementById('body').value;
+
+            sendBtn.disabled = true;
+            sendBtn.textContent = '⏳ Sending...';
+            showResult('info', '📤 Sending test email... Please wait...');
+
+            try {
+                // Check if user is authenticated
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
+                
+                if (authError || !user) {
+                    throw new Error('Not authenticated. Please log in to the dashboard first.');
+                }
+
+                console.log('Authenticated user:', user.email);
+
+                // Call the send-campaign-email edge function
+                const { data, error } = await supabase.functions.invoke('send-campaign-email', {
+                    body: {
+                        to: toEmail,
+                        subject: subject,
+                        body: body.replace(/\${new Date\(\).toLocaleString\(\)}/g, new Date().toLocaleString()),
+                        contactId: user.id, // Using user ID as dummy contact ID for test
+                        campaignId: user.id, // Using user ID as dummy campaign ID for test
+                    }
+                });
+
+                if (error) {
+                    throw error;
+                }
+
+                console.log('Email sent successfully:', data);
+                showResult('success', `
+                    ✅ <strong>Success!</strong> Test email has been sent to <strong>${toEmail}</strong>
+                    <br><br>
+                    📬 <strong>Check your inbox</strong> (and spam folder) for the email.
+                    <br><br>
+                    ${data.messageId ? `📝 Message ID: <code>${data.messageId}</code>` : ''}
+                    <br><br>
+                    ⏱️ <strong>Timeline:</strong> Email should arrive within 1-5 minutes.
+                `);
+
+            } catch (error) {
+                console.error('Error sending email:', error);
+                showResult('error', `
+                    ❌ <strong>Error:</strong> ${error.message}
+                    <br><br>
+                    <strong>Troubleshooting:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>Make sure you're logged into the dashboard</li>
+                        <li>Verify SendGrid API key is configured in Supabase</li>
+                        <li>Check that the send-campaign-email function is deployed</li>
+                        <li>Review Supabase function logs for detailed errors</li>
+                    </ul>
+                    <strong>Full error:</strong>
+                    <pre>${JSON.stringify(error, null, 2)}</pre>
+                `);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📧 Send Test Email';
+            }
+        });
+
+        function showResult(type, message) {
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = message;
+            resultDiv.style.display = 'block';
+        }
+
+        // Auto-check authentication status on load
+        window.addEventListener('load', async () => {
+            try {
+                if (!supabase) {
+                    showResult('error', '⚠️ <strong>Configuration Required:</strong> Please open this file and update the SUPABASE_URL and SUPABASE_ANON_KEY constants with your actual Supabase credentials.');
+                    return;
+                }
+
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    showResult('success', `✅ Authenticated as: <strong>${user.email}</strong><br>You can now send test emails.`);
+                } else {
+                    showResult('info', '⚠️ <strong>Not logged in.</strong> Please log in to the dashboard first, then refresh this page.');
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                showResult('error', '❌ Error checking authentication. Make sure Supabase is properly configured.');
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
