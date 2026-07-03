@@ -79,6 +79,10 @@ import SigningDocumentDetail from "./pages/bd/SigningDocumentDetail";
 import NotificationsPage from "./pages/NotificationsPage";
 import AccountabilityChart from "./pages/bd/AccountabilityChart";
 import AccountabilityGoalDetail from "./pages/bd/AccountabilityGoalDetail";
+import { PostAggregatorDashboard } from "./features/post-aggregator/pages/PostAggregatorDashboard";
+import { OrgMemoryPage } from "./features/org-memory/pages/OrgMemoryPage";
+import { UpworkJobsPage } from "./features/upwork-jobs/pages/UpworkJobsPage";
+import { JobBoardDashboardPage } from "./features/upwork-jobs/pages/JobBoardDashboardPage";
 
 const queryClient = new QueryClient();
 
@@ -122,6 +126,8 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route path="/startup-feed" element={<PostAggregatorDashboard />} />
+            <Route path="/org-memory" element={<OrgMemoryPage />} />
             <Route path="/" element={<DashboardRedirect />} />
             <Route path="/dashboard" element={<DashboardRedirect />} />
             
@@ -235,6 +241,8 @@ const App = () => (
               {/* Performance */}
               <Route path="performance/personal" element={<PersonalDashboard />} />
               <Route path="performance/reports" element={<PerformanceReports />} />
+              <Route path="upwork-jobs" element={<UpworkJobsPage />} />
+              <Route path="upwork-jobs/dashboard" element={<JobBoardDashboardPage />} />
               
               {/* Actions */}
               <Route path="actions/tasks" element={<ActionsTasks />} />

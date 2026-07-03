@@ -70,6 +70,7 @@ Our documentation is organized in numbered layers for easy navigation:
 
 - `AGENTS.md` - AI agent development guide
 - `ai-agent-framework.md` - AI framework overview
+- `org-memory-platform.md` - LangGraph organizational memory platform (planned)
 
 ### archive/
 

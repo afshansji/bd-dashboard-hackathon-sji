@@ -2,6 +2,8 @@
 
 This document outlines the new governance, orchestration, and frontend workflows that support AI agents across the dashboard.
 
+**Related**: [Organizational Memory Platform (LangGraph)](./org-memory-platform.md) — planned graph-based workflow system for company project knowledge (separate from `run-ai-agent`).
+
 ## Supabase schema updates
 - `ai_agents` now stores a `config` JSONB payload describing provider routing (primary, fallback, research) and feature flags.
 - `ai_agent_runs` tracks provider telemetry in the `output` column alongside a `provider_chain` array summarising execution order.
@@ -44,6 +46,6 @@ Edge Functions expect the following environment variables to be configured:
 2. Deploy Edge Functions: `supabase functions deploy run-ai-agent create-company-vector-store linkedin-upload-file-to-openai`.
 3. Update environment variables for OpenAI, Gemini, Perplexity, Anthropic, and Exa providers. For Exa, run:
    ```bash
-   supabase functions secrets set EXA_API_KEY=<value>
+   supabase secrets set EXA_API_KEY=<value>
    ```
 4. Rebuild the frontend (`npm run build`) to surface the LinkedIn configuration dashboard.

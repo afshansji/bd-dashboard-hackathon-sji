@@ -34,6 +34,7 @@ import {
   MessageSquare,
   PenTool,
   Bell,
+  Briefcase,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
@@ -176,6 +177,12 @@ const Layout = ({ userRole }: LayoutProps) => {
     // Outreach & Performance - available to all
     navigation.push(
       { name: `Outreach${campaignCount ? ` (${campaignCount})` : ''}`, href: "/campaigns", icon: Megaphone, current: false },
+      { name: "Job Leads", href: "/bd/upwork-jobs", icon: Briefcase, current: false,
+        subItems: [
+          { name: "All Leads", href: "/bd/upwork-jobs", icon: Briefcase, current: false },
+          { name: "Job Board Dashboard", href: "/bd/upwork-jobs/dashboard", icon: BarChart3, current: false },
+        ],
+      },
       {
         name: "Performance",
         href: "/bd/performance/personal",

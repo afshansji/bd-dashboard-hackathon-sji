@@ -1,1 +1,19 @@
 project_id = "rjhizdrmnoeegxfcfejx"
+
+[functions.upwork-inspector]
+verify_jwt = false
+
+[functions.opportunity-intelligence]
+verify_jwt = true
+
+[functions.opportunity-copilot]
+verify_jwt = true
+
+[functions.job-lead-outreach]
+verify_jwt = true
+
+[functions.company-intelligence]
+verify_jwt = true
+
+[functions.meeting-brief]
+verify_jwt = true
