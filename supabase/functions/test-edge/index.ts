@@ -1,9 +1,19 @@
-export default {
-  fetch: withSupabase({ auth: ['publishable', 'secret'] }, async (req, ctx) => {
-    const { name } = await req.json()
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-    return Response.json({
+console.log("Test Edge Function Loaded!");
+
+serve(async (req) => {
+  const { name } = await req.json();
+
+  return new Response(
+    JSON.stringify({
       message: `Hello ${name}!`,
-    })
-  }),
-}
+      source: "Self Hosted EC2",
+    }),
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+});
